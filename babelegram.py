@@ -1,61 +1,77 @@
-import sys
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+"""
+An Telegram bot for translanting messages.
+The bot uses the Microsoft Translator API via microsofttranslator library.
+"""
+
+import os
 import asyncio
 import telepot
-import telepot.async
+from telepot.async.delegate import per_inline_from_id, create_open
+from telepot.namedtuple import InlineQueryResultArticle
+import microsofttranslator as mstranslator
 
-import mstranslate as translator
-
-"""
-$ python3.4 skeletona.py <token>
-A skeleton for your async telepot programs.
-"""
-
-
-def on_chat_message(msg):
-    content_type, chat_type, chat_id = telepot.glance(msg)
-    print('Normal Message:', content_type, chat_type, chat_id)
+TOP_LANGUAGES = [
+    ('en', 'Inglês'),
+    ('es', 'Espanhol'),
+    ('fr', 'Francês'),
+    ('de', 'Alemão')
+]
 
 
-@asyncio.coroutine
-def on_inline_query(msg):
-    # need `/setinline`
-    query_id, from_id, query_string = telepot.glance(
-        msg, flavor='inline_query')
+class InlineHandler(telepot.async.helper.UserHandler):
+    def __init__(self, seed_tuple, timeout):
+        super(InlineHandler, self).__init__(seed_tuple, timeout,
+                                            flavors=['inline_query', 'chosen_inline_result'])
 
-    if query_string:
-        # print('Inline Query:', query_id, from_id, query_string)
-        translated_text = translator.translate(
-            AZ_ACCESS_TOKEN, query_string, 'en', 'pt')
+        # Create the Answerer, give it the compute function.
+        self._answerer = telepot.async.helper.Answerer(
+            self.bot, self.compute_answer)
 
-        # Compose your own answers
-        articles = [{
-            'type': 'article',
-            'id': '0',
-            'title': '{0}...'.format(translated_text),
-            'message_text': translated_text
-        }]
-        yield from bot.answerInlineQuery(query_id, articles)
+    @asyncio.coroutine
+    def compute_answer(self, inline_query):
+        query_id, from_id, query_string = telepot.glance(
+            inline_query, flavor='inline_query')
+        if not query_string:
+            return []
 
+        return list(self.get_result_list(query_string))
 
-def on_chosen_inline_result(msg):
-    # need `/setinlinefeedback`
-    result_id, from_id, query_string = telepot.glance(
-        msg, flavor='chosen_inline_result')
-    print('Chosen Inline Result:', result_id, from_id, query_string)
+    def on_inline_query(self, msg):
+        # Just dump inline query to answerer
+        self._answerer.answer(msg)
 
+    def on_chosen_inline_result(self, msg):
+        result_id, from_id, query_string = telepot.glance(
+            msg, flavor='chosen_inline_result')
+        print(self.id, ':', 'Chosen Inline Result:',
+              result_id, from_id, query_string)
 
-BOT_TOKEN, AZ_CLIENT_ID, AZ_CLIENT_SECRET = sys.argv[1:4]
+    def get_result_list(self, query_string):
+        for lang_id, lang_name in TOP_LANGUAGES:
+            translated_query = translator.translate(query_string, lang_id)
+            yield InlineQueryResultArticle(
+                type='article',
+                id=lang_id,
+                title=lang_name,
+                description=translated_query,
+                message_text=translated_query
+            )
 
-# Getting the MS Translate API token
-AZ_ACCESS_TOKEN = translator.get_access_token(AZ_CLIENT_ID, AZ_CLIENT_SECRET)
-print(AZ_ACCESS_TOKEN)
-
-bot = telepot.async.Bot(BOT_TOKEN)
+# Getting environment variables
+BOT_TOKEN = os.environ['BOT_TOKEN']
+AZ_CLIENT_ID = os.environ['AZ_CLIENT_ID']
+AZ_CLIENT_SECRET = os.environ['AZ_CLIENT_SECRET']
+# Starting the translator
+translator = mstranslator.Translator(AZ_CLIENT_ID, AZ_CLIENT_SECRET)
+# Starting the bot
+bot = telepot.async.DelegatorBot(BOT_TOKEN, [
+    (per_inline_from_id(), create_open(InlineHandler, timeout=60)),
+])
 loop = asyncio.get_event_loop()
 
-loop.create_task(bot.messageLoop({'normal': on_chat_message,
-                                  'inline_query': on_inline_query,
-                                  'chosen_inline_result': on_chosen_inline_result}))
+loop.create_task(bot.messageLoop())
 print('Listening ...')
 
 loop.run_forever()
