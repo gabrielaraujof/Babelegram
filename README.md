@@ -13,7 +13,7 @@ Telegram Translator Bot
 This project is licensed under [MIT LICENSE](LICENSE).
 
 # Contact
-Feel free the contact me on telegram ([@gabrielaraujof](https://telegram.me/YourUsernameHere)) or by email ([_contact at gabrielaraujo dot me_](mailto:contact@gabrielaraujo.me)).
+Feel free the contact me on telegram ([@gabrielaraujof](https://telegram.me/gabrielaraujof)) or by email ([_contact at gabrielaraujo dot me_](mailto:contact@gabrielaraujo.me)).
 
 # TODO
 
