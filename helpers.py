@@ -57,7 +57,7 @@ def start_rank():
     available for translating."""
     ocurrence_dict = {lang_id: 1 for lang_id, name in _LANG_SET.items()}
     ranking = list([lang_id for lang_id, name in _LANG_SET.items()])
-    return ocurrence_dict, ranking
+    return ranking, ocurrence_dict
 
 
 def rating_calc(item, ocurrences, last_ocurrences, total_ocurrences):
@@ -69,3 +69,48 @@ def rating_calc(item, ocurrences, last_ocurrences, total_ocurrences):
     if last_ocurrences and item == last_ocurrences[-1]:
         rating *= 4
     return rating
+
+import asyncio
+from concurrent.futures._base import CancelledError
+
+@asyncio.coroutine
+def _yell(fn, *args, **kwargs):
+    if asyncio.iscoroutinefunction(fn):
+        return (yield from fn(*args, **kwargs))
+    else:
+        return fn(*args, **kwargs)
+
+class Cacher(object):
+
+    def __init__(self, bot_handler, loop=None):
+        self._bot_handler = bot_handler
+        self._loop = loop if loop is not None else asyncio.get_event_loop()
+        self._working_tasks = {}
+
+    def cache(self, inline_query, compute_fn, *compute_args, **compute_kwargs):
+        from_id = inline_query['from']['id']
+
+        @asyncio.coroutine
+        def compute_and_cache():
+            try:
+                ans = yield from _yell(compute_fn, *compute_args, **compute_kwargs)
+                if isinstance(ans, list):
+                    self._bot_handler.cached_results = ans
+                else:
+                    raise ValueError('Invalid answer format')
+            except CancelledError:
+                # Cancelled. Record has been occupied by new task. Don't touch.
+                raise
+            except:
+                # Die accidentally. Remove myself from record.
+                del self._working_tasks[from_id]
+                raise
+            else:
+                # Die naturally. Remove myself from record.
+                del self._working_tasks[from_id]
+
+        if from_id in self._working_tasks:
+            self._working_tasks[from_id].cancel()
+
+        t = self._loop.create_task(compute_and_cache())
+        self._working_tasks[from_id] = t

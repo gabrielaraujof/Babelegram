@@ -1,2 +1,2 @@
 microsofttranslator==0.7
-telepot==6.5
+telepot==6.6
