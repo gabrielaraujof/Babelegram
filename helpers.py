@@ -1,8 +1,13 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 """
 A set of helpers functions and constants for supporting the bot engine.
 """
+
+import logging
+import asyncio
+from concurrent.futures._base import CancelledError
+
+from telepot.namedtuple import InlineQueryResultArticle
 
 _LANG_SET = {
     'ar': ' Arabic',
@@ -70,34 +75,36 @@ def rating_calc(item, ocurrences, last_ocurrences, total_ocurrences):
         rating *= 4
     return rating
 
-import asyncio
-from concurrent.futures._base import CancelledError
-
-@asyncio.coroutine
-def _yell(fn, *args, **kwargs):
-    if asyncio.iscoroutinefunction(fn):
-        return (yield from fn(*args, **kwargs))
-    else:
-        return fn(*args, **kwargs)
 
 class Cacher(object):
+    """ Responsable for caching the next page results of inline queries.
+    """
 
     def __init__(self, bot_handler, loop=None):
         self._bot_handler = bot_handler
         self._loop = loop if loop is not None else asyncio.get_event_loop()
         self._working_tasks = {}
 
-    def cache(self, inline_query, compute_fn, *compute_args, **compute_kwargs):
+    def cache(self, inline_query, compute_function, query, offset):
+        """ Creates the task and get it running in the event loop.
+        """
         from_id = inline_query['from']['id']
 
-        @asyncio.coroutine
         def compute_and_cache():
+            """Wraps the function to be executed in order to proper
+             handling exceptions.
+             """
             try:
-                ans = yield from _yell(compute_fn, *compute_args, **compute_kwargs)
-                if isinstance(ans, list):
-                    self._bot_handler.cached_results = ans
-                else:
-                    raise ValueError('Invalid answer format')
+                cache_offset = offset + self._bot_handler.settings.page_size
+                languages = self._bot_handler.settings.rank[
+                    cache_offset:cache_offset + self._bot_handler.settings.page_size]
+                for lang_id in languages:
+                    ans = compute_function(query, lang_id)
+                    if isinstance(ans, InlineQueryResultArticle):
+                        self._bot_handler.cached_results.append(ans)
+                        logging.info('Caching new result for %s', lang_id)
+                    else:
+                        raise ValueError('Invalid answer format')
             except CancelledError:
                 # Cancelled. Record has been occupied by new task. Don't touch.
                 raise
@@ -112,5 +119,5 @@ class Cacher(object):
         if from_id in self._working_tasks:
             self._working_tasks[from_id].cancel()
 
-        t = self._loop.create_task(compute_and_cache())
-        self._working_tasks[from_id] = t
+        caching_task = self._loop.run_in_executor(None, compute_and_cache)
+        self._working_tasks[from_id] = caching_task
