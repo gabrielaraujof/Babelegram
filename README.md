@@ -6,7 +6,7 @@ Telegram Translator Bot
 # Features
 
 * Inline translation to several languages.
-* Paginated results.
+* Cached and paginated results.
 * Frequently used languages ranking for ordering the results.
 
 # License
@@ -18,7 +18,6 @@ Feel free the contact me on telegram ([@gabrielaraujof](https://telegram.me/gabr
 # TODO
 
 * Create commands for translation settings.
-* Speed up the inline query results.
 * Add the ability to translate in private chat (useful for translating messages from another user).
 * Add the ability to translate in groups.
 * Add the ability to translate messages to audio message.
