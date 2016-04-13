@@ -13,24 +13,24 @@ import microsofttranslator
 import handlers
 
 
-update_queue = asyncio.Queue()  # channel between web app and bot
+async def init(loop, bot, queue, url, port):
+    """ Starts server and plugs-in the bot."""
 
-async def webhook(request):
-    """Test..
-    """
-    data = await request.text()
-    await update_queue.put(data)  # pass update to bot
-    return web.Response(body='OK'.encode('utf-8'))
+    async def webhook(request):
+        """ Handles all income messages from Telegram API"""
+        data = await request.text()
+        await queue.put(data)  # pass update to bot
+        return web.Response(body='OK'.encode('utf-8'))
 
-async def init(loop, bot, url, port):
+    # TODO passes the webhook url path by environment variable
     app = web.Application(loop=loop)
     app.router.add_route('GET', '/abc', webhook)
     app.router.add_route('POST', '/abc', webhook)
 
+    logging.info('Starting the server...')
     srv = await loop.create_server(app.make_handler(), '', port)
-    print("Server started ...")
-
-    await bot.setWebhook(url)
+    logging.info('Server started...')
+    await bot.setWebhook(url)  # sets the url for webhook
 
     return srv
 
@@ -53,16 +53,19 @@ def main():
     port = os.environ['PORT']
 
     # Creating the translator
+    logging.info('Creating translator...')
     mstranslator = microsofttranslator.Translator(
         az_client_id, az_client_secret)
     # Creating the bot
+    logging.info('Creating the bot...')
     bot = handlers.create_bot(bot_token, mstranslator)
 
     # Starting the main loop
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(init(loop, bot, url, port))
+    message_queue = asyncio.Queue()  # channel between web app and bot
+    loop.run_until_complete(init(loop, bot, message_queue, url, port))
     logging.info('Starting the bot...')
-    loop.create_task(bot.messageLoop(source=update_queue))
+    loop.create_task(bot.messageLoop(source=message_queue))
     logging.info('Bot listening...')
     try:
         loop.run_forever()
