@@ -50,7 +50,7 @@ def main():
     az_client_id = os.environ['AZ_CLIENT_ID']
     az_client_secret = os.environ['AZ_CLIENT_SECRET']
     url = os.environ['BOT_WEBHOOK_URL']
-    port = os.environ['BOT_WEBHOOK_PORT']
+    port = os.environ['PORT']
 
     # Creating the translator
     mstranslator = microsofttranslator.Translator(
