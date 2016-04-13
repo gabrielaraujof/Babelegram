@@ -13,7 +13,7 @@ import microsofttranslator
 import handlers
 
 
-async def init(loop, bot, queue, url, port):
+async def init(loop, bot, queue, base_url, url_path, port):
     """ Starts server and plugs-in the bot."""
 
     async def webhook(request):
@@ -22,15 +22,15 @@ async def init(loop, bot, queue, url, port):
         await queue.put(data)  # pass update to bot
         return web.Response(body='OK'.encode('utf-8'))
 
-    # TODO passes the webhook url path by environment variable
     app = web.Application(loop=loop)
-    app.router.add_route('GET', '/abc', webhook)
-    app.router.add_route('POST', '/abc', webhook)
+    app.router.add_route('GET', url_path, webhook)
+    app.router.add_route('POST', url_path, webhook)
 
     logging.info('Starting the server...')
     srv = await loop.create_server(app.make_handler(), '', port)
     logging.info('Server started...')
-    await bot.setWebhook(url)  # sets the url for webhook
+    # sets the url for webhook
+    await bot.setWebhook(base_url + url_path)
 
     return srv
 
@@ -49,7 +49,8 @@ def main():
     bot_token = os.environ['BOT_TOKEN']
     az_client_id = os.environ['AZ_CLIENT_ID']
     az_client_secret = os.environ['AZ_CLIENT_SECRET']
-    url = os.environ['BOT_WEBHOOK_URL']
+    url = os.environ['BOT_BASE_URL']
+    url_path = os.environ['BOT_WEBHOOK_PATH']
     port = os.environ['PORT']
 
     # Creating the translator
@@ -63,7 +64,8 @@ def main():
     # Starting the main loop
     loop = asyncio.get_event_loop()
     message_queue = asyncio.Queue()  # channel between web app and bot
-    loop.run_until_complete(init(loop, bot, message_queue, url, port))
+    server_task = init(loop, bot, message_queue, url, url_path, port)
+    loop.run_until_complete(server_task)
     logging.info('Starting the bot...')
     loop.create_task(bot.messageLoop(source=message_queue))
     logging.info('Bot listening...')
