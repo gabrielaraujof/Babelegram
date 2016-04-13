@@ -32,7 +32,7 @@ class Translator(object):
         return InlineQueryResultArticle(
             type='article',
             id=lang_id,
-            title=helpers.get_lang_name(lang_id),
+            title='{} {}'.format(lang_id.upper(), helpers.get_lang_name(lang_id)),
             description=translated_query,
             message_text=translated_query
         )
