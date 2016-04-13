@@ -27,7 +27,7 @@ async def init(loop, bot, url, port):
     app.router.add_route('GET', '/abc', webhook)
     app.router.add_route('POST', '/abc', webhook)
 
-    srv = await loop.create_server(app.make_handler(), '0.0.0.0', port)
+    srv = await loop.create_server(app.make_handler(), '', port)
     print("Server started ...")
 
     await bot.setWebhook(url)
