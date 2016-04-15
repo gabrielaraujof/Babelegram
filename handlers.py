@@ -31,6 +31,7 @@ class BabelegramHandler(telepot.async.helper.UserHandler):
             seed_tuple, timeout,
             flavors=['inline_query', 'chosen_inline_result']
         )
+        logging.info('Started handler...')
         # Init instance variables
         # Create the Answerer, give it the compute function.
         self._answerer = telepot.async.helper.Answerer(self.bot)
@@ -97,3 +98,6 @@ class BabelegramHandler(telepot.async.helper.UserHandler):
             ),
             reverse=True
         )
+
+    def on_close(self, exception):
+        logging.info('Closing...')
