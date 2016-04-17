@@ -5,12 +5,16 @@ Package responsable for fetching the translations.
 
 import logging
 import asyncio
+import os
 from concurrent.futures._base import CancelledError
 
 import telepot
 from telepot.namedtuple import InlineQueryResultArticle
 
 import helpers
+
+
+BASE_URL = os.environ['BOT_BASE_URL']
 
 
 class Translator(object):
@@ -32,9 +36,12 @@ class Translator(object):
         return InlineQueryResultArticle(
             type='article',
             id=lang_id,
-            title='{} {}'.format(lang_id.upper(), helpers.get_lang_name(lang_id)),
-            description=translated_query,
-            message_text=translated_query
+            title=translated_query,
+            description=helpers.get_lang_name(lang_id),
+            message_text=translated_query,
+            thumb_url=BASE_URL + '/img/icon.png',
+            thumb_width=64,
+            thumb_height=64
         )
 
     def cache(self, inline_query):

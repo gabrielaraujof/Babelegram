@@ -25,6 +25,7 @@ async def server_init(loop, bot, queue, base_url, url_path, port):
     app = web.Application(loop=loop)
     app.router.add_route('GET', url_path, webhook)
     app.router.add_route('POST', url_path, webhook)
+    app.router.add_static('/img', 'assets/')
 
     logging.info('Starting the server...')
     srv = await loop.create_server(app.make_handler(), '', port)
