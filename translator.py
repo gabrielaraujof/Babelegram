@@ -39,9 +39,9 @@ class Translator(object):
             title=translated_query,
             description=helpers.get_lang_name(lang_id),
             message_text=translated_query,
-            # thumb_url=BASE_URL + '/img/icon.png',
-            # thumb_width=64,
-            # thumb_height=64
+            thumb_url=BASE_URL + '/img/thumb.png',
+            thumb_width=64,
+            thumb_height=64
         )
 
     def cache(self, inline_query):

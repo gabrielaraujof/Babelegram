@@ -25,6 +25,7 @@ async def server_init(loop, bot, queue, base_url, url_path, port):
     app = web.Application(loop=loop)
     app.router.add_route('GET', url_path, webhook)
     app.router.add_route('POST', url_path, webhook)
+    # Just for development purposes. Later it would be served via nginx
     app.router.add_static('/img', 'assets/')
 
     logging.info('Starting the server...')
@@ -74,9 +75,9 @@ def main():
         loop.create_task(bot.messageLoop(source=message_queue))
     else:
         logging.info('Deleting webhook')
-        loop.create_task(bot.setWebhook())  # deleting the webhook
+        loop.create_task(bot.setWebhook())  # deleting any webhook available
         logging.info('Starting the bot...')
-        loop.create_task(bot.messageLoop())
+        loop.create_task(bot.messageLoop()) # starting bot pooling
 
     try:
         loop.run_forever()
