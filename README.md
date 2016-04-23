@@ -1,7 +1,7 @@
 # Babelegram
 Telegram Translator Bot
 
-(_Powered by **Microsoft Translator API**_ via [Microsoft Translator Python API](https://github.com/openlabs/Microsoft-Translator-Python-API))
+_This bot is one of the many results in my learning process for many aspects of the Python world._
 
 # Features
 
@@ -21,3 +21,10 @@ Feel free the contact me on telegram ([@gabrielaraujof](https://telegram.me/gabr
 * Add the ability to translate in private chat (useful for translating messages from another user).
 * Add the ability to translate in groups.
 * Add the ability to translate messages to audio message.
+* Persist user data and configurations.
+
+# Credits
+
+* Powered by _**Microsoft Translator API**_ via [Microsoft Translator Python API](https://github.com/openlabs/Microsoft-Translator-Python-API))
+* Based on [Telepot - Python framework for Telegram Bot API](https://github.com/nickoala/telepot)
+* Thumb made by [Freepik](http://www.freepik.com/) from [www.flaticon.com](www.flaticon.com)
