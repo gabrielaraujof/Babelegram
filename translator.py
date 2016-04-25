@@ -9,7 +9,7 @@ import os
 from concurrent.futures._base import CancelledError
 
 import telepot
-from telepot.namedtuple import InlineQueryResultArticle
+from telepot.namedtuple import InlineQueryResultArticle, InputTextMessageContent
 
 import helpers
 
@@ -34,11 +34,11 @@ class Translator(object):
         """
         translated_query = self.translator.translate(query, lang_id)
         return InlineQueryResultArticle(
-            type='article',
+            # type='article',
             id=lang_id,
             title=translated_query,
             description=helpers.get_lang_name(lang_id),
-            message_text=translated_query,
+            input_message_content=InputTextMessageContent(message_text=translated_query),
             thumb_url=BASE_URL + '/img/thumb.png',
             thumb_width=64,
             thumb_height=64

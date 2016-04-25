@@ -100,4 +100,4 @@ class BabelegramHandler(telepot.async.helper.UserHandler):
         )
 
     def on_close(self, exception):
-        logging.info('Closing...')
+        logging.info(r'Closing user handler. [Cause: %s]', exception)

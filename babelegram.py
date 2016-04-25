@@ -72,12 +72,12 @@ def main():
         server_task = server_init(loop, bot, message_queue, url, url_path, port)
         loop.run_until_complete(server_task)
         logging.info('Starting the bot...')
-        loop.create_task(bot.messageLoop(source=message_queue))
+        loop.create_task(bot.message_loop(source=message_queue))
     else:
         logging.info('Deleting webhook')
         loop.create_task(bot.setWebhook())  # deleting any webhook available
         logging.info('Starting the bot...')
-        loop.create_task(bot.messageLoop()) # starting bot pooling
+        loop.create_task(bot.message_loop()) # starting bot pooling
 
     try:
         loop.run_forever()
