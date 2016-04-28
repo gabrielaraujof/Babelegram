@@ -1,10 +1,9 @@
-#!/usr/bin/python3
 """
 Package responsable for fetching the translations.
 """
 
-import logging
 import asyncio
+import logging
 import os
 from concurrent.futures._base import CancelledError
 
@@ -34,7 +33,6 @@ class Translator(object):
         """
         translated_query = self.translator.translate(query, lang_id)
         return InlineQueryResultArticle(
-            # type='article',
             id=lang_id,
             title=translated_query,
             description=helpers.get_lang_name(lang_id),

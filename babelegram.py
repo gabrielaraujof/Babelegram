@@ -3,14 +3,14 @@ An Telegram bot for translating messages.
 The bot uses the Microsoft Translator API via microsofttranslator library.
 """
 
-import os
-import logging
 import asyncio
+import logging
+import os
+
 from aiohttp import web
 import microsofttranslator
 
 import handlers
-
 
 async def server_init(loop, bot, queue, base_url, url_path, port):
     """ Starts server and plugs-in the bot."""

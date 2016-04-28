@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 A set of helpers functions and constants for supporting the bot engine.
 """
