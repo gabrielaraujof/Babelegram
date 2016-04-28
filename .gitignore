@@ -76,3 +76,6 @@ pip-selfcheck.json
 
 # Pycharm
 .idea/
+
+# VSCode
+.vscode/

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 An Telegram bot for translating messages.
 The bot uses the Microsoft Translator API via microsofttranslator library.
@@ -69,7 +68,8 @@ def main():
         port = os.environ['PORT']
 
         message_queue = asyncio.Queue()  # channel between web app and bot
-        server_task = server_init(loop, bot, message_queue, url, url_path, port)
+        server_task = server_init(
+            loop, bot, message_queue, url, url_path, port)
         loop.run_until_complete(server_task)
         logging.info('Starting the bot...')
         loop.create_task(bot.message_loop(source=message_queue))
@@ -77,7 +77,7 @@ def main():
         logging.info('Deleting webhook')
         loop.create_task(bot.setWebhook())  # deleting any webhook available
         logging.info('Starting the bot...')
-        loop.create_task(bot.message_loop()) # starting bot pooling
+        loop.create_task(bot.message_loop())  # starting bot pooling
 
     try:
         loop.run_forever()
